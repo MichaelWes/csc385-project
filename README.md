@@ -1,7 +1,7 @@
-#C Source Files
+# C Source Files
 main.c
 
-#Assembly Files
+# Assembly Files
 ps2.s
 sensor.s
 motor.s
