@@ -31,7 +31,7 @@ HEX0_handler:
 	movia r10, 0xFFFFFFFC       # motor0 enabled (bit0=0), direction set to forward (bit1=0) 
 	stwio r10, 0(r8)  
     
-    addi r11, r0, 30000
+    movia r11, 100000000 
 loop:
 	addi r11, r11, -1
 	bgt r11, r0, loop
