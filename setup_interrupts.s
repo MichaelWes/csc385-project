@@ -87,7 +87,7 @@ interrupt_epilogue:
     
     movia et, ADDR_PUSHB
     movia r11, 0xFFFFFFFF
-    stwio r0, 12(et)            # clear HEX edge capture registers by write.
+    stwio r11, 12(et)            # clear HEX edge capture registers by write.
 
     ldw r11, 12(sp)
     ldw r10, 8(sp)
