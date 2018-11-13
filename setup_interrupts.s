@@ -20,7 +20,7 @@ setup_interrupts:
   movia r2,ADDR_PUSHB
   movia r3,0x3	  # Enable interrrupt mask = 0011
   stwio r3,8(r2)  # Enable interrupts on pushbuttons 1,2, and 3
-  stwio r0,12(r2) # Clear edge capture register to prevent unexpected interrupt
+  stwio r10,12(r2) # Clear edge capture register (write all 1's) to prevent unexpected interrupt
 
   movia r2,IRQ_PUSHBUTTONS
   wrctl ctl3,r2   # Enable bit 1 - Pushbuttons use IRQ 1
@@ -86,9 +86,10 @@ HEX1_handler:
 interrupt_epilogue:
     
     movia et, ADDR_PUSHB
+    movia r11, 0xFFFFFFFF
     stwio r0, 12(et)            # clear HEX edge capture registers by write.
 
-	ldw r11, 12(sp)
+    ldw r11, 12(sp)
     ldw r10, 8(sp)
     ldw r9, 4(sp)
     ldw r8, 0(sp)
