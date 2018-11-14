@@ -1,6 +1,8 @@
 .equ ADDR_PUSHB, 0xFF200050
 .equ ADDR_JP1, 0xFF200060   # Address GPIO JP1
 .equ IRQ_PUSHBUTTONS, 0x02
+.equ TIMER0_BASE 0xFF202000
+.equ TIMER1_BASE 0xFF202020
 
 .text
 .global setup_interrupts
@@ -15,14 +17,24 @@ setup_interrupts:
   
 	movia r10, 0xFFFFFFFF       # turn off all motors.
 	stwio r10, 0(r8)
-/*     */
 
+  /* Request interrupts from HEX */
   movia r2,ADDR_PUSHB
-  movia r3,0x3	  # Enable interrrupt mask = 0011
+  movia r3,0x7	  # Enable interrrupt mask = 0111
   stwio r3,8(r2)  # Enable interrupts on pushbuttons 1,2, and 3
-  stwio r10,12(r2) # Clear edge capture register (write all 1's) to prevent unexpected interrupt
+  stwio r10,12(r2) # Clear edge capture register (write all 1's) for HEX keypad.
+  
+  
+  /* TODO: REPLACE HARD CODED OFFSETS WITH PROPER LABELS.*/
+  /* Request interrupts from timer0, timer1 */
+  movia r2, TIMER0_BASE
+  movia r3,0x1    # Enable interrrupt mask = 0001  
+  stwio r3,4(r2)  # Enable interrupts on pushbuttons 1,2, and 3
+  stwio r0,0(r2)  # Clear interrupt bit for timers.
 
   movia r2,IRQ_PUSHBUTTONS
+  ori r2, IRQ_TIMER0
+  ori r2, IRQ_TIMER1
   wrctl ctl3,r2   # Enable bit 1 - Pushbuttons use IRQ 1
 
   movia r2,1
@@ -59,6 +71,9 @@ setup_interrupts:
     beq r10, r11, HEX0_handler
     slli r11, r11, 1
     beq r10, r11, HEX1_handler
+    slli r11, r11, 1
+    beq r10, r11, HEX2_handler
+
 
 HEX0_handler:
 	movia r8, ADDR_JP1
@@ -82,12 +97,31 @@ HEX1_handler:
 	stwio r10, 0(r8)
     jmpi interrupt_epilogue  
 
+HEX2_handler:
+    movia r8, ADDR_JP1
+    movia r9, ADDR_PUSHB
+
+    movia r10, 0x7F557FF       # set direction for motors to all output 
+    stwio r10, 4(r8)
+
+
+    /*
+        make up the custom protocol for PWM for left
+    
+    */
+
+
+    movia r10, 0xFFFFFFF3       # make it go left (or right?!)
+    stwio r10, 0(r8)
+    jmpi interrupt_epilogue
+
     
 interrupt_epilogue:
     
     movia et, ADDR_PUSHB
     movia r11, 0xFFFFFFFF
     stwio r11, 12(et)            # clear HEX edge capture registers by write.
+				 # TODO: clear interrupt bit on timer0, timer1
 
     ldw r11, 12(sp)
     ldw r10, 8(sp)
