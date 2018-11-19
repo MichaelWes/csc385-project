@@ -3,14 +3,14 @@
 .equ JP1_DATA, 0x00
 .equ JP1_DIRREG, 0x04
 .equ JP1_IMR, 0x08
-.equ JP1_ECR, 0x12
+.equ JP1_ECR, 0x0c
 
 /* Pushbutton addresses and byte offsets */
 .equ ADDR_PUSHB, 0xFF200050
 .equ PUSHB_DATA, 0x00
 .equ PUSHB_NA, 0x04
 .equ PUSHB_IMR, 0x08
-.equ PUSHB_ECR, 0x12
+.equ PUSHB_ECR, 0x0c
 .equ PUSHB_INTM, 0x07
 
 /* Timer addresses and byte offsets */
