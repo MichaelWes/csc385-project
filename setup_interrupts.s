@@ -96,8 +96,13 @@ setup_interrupts:
     
 	# Check if interrupt was caused by the HEX keypad
     	andi r9, et, IRQ_PUSHBUTTONS 		# IRQ 1
-    	beq r9, r0, interrupt_epilogue
+    	bne r9, r0, HEX_MUX
+	# Check if interrupt was caused by the keyboard
+	andi r9, et, IRQ_PS2C
+	beq r9, r0, interrupt_epilogue
+	bne r9, r0, PS2_handler
 
+HEX_MUX:
 	# If we get here, a HEX keypad button was pushed for sure.
 	# Determine which HEX keypad button was pushed, and branch to its handler.
     	movia r9, ADDR_PUSHB 
@@ -128,6 +133,10 @@ HEX1_handler:
 HEX2_handler:
    	movia r10, 0xFFFFFFF3			# make it go left (or right?!)
     	stwio r10, JP1_DATA(r8)
+	jmpi interrupt_epilogue
+
+PS2_handler:
+	#TODO: handle specific keys.
 	jmpi interrupt_epilogue
     
 interrupt_epilogue:
