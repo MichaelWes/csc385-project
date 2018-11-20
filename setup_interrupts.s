@@ -163,6 +163,10 @@ PS2_handler:
 	
 	movia r8, PS2C1_BASE
 	ldwio r11, PS2C1_DATA(r8)		# Reading clears the keyboard interrupt.
+	
+	movi r9, 0x1
+	wrctl status, r9			# Re-enable interrupts.
+	
 	jmpi interrupt_epilogue
     
 interrupt_epilogue:
