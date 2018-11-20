@@ -62,26 +62,42 @@ setup_interrupts:
 	stwio r3, TIMER_CONTROL(r2)		# Enable interrupts on timer0
 	stwio r0, TIMER_STATUS(r2)		# Clear interrupt bit for timers.
 	
+	/* Request interrupts from keyboard controller */
+	movia r2, PS2C1_BASE
+	movi r3, 0x1
+	stwio r3, PS2C1_CTRLSTS(r2)		# Interrupt enable is bit 0 of control register.
+	ldwio r0, PS2C1_DATA(r2)		# Read data to acknowledge the interrupt. Throw it away.
+	
+	/* Enable specific interrupt lines on processor */
 	movia r2, IRQ_PUSHBUTTONS
 	ori r2, r2, IRQ_TIMER0
 	ori r2, r2, IRQ_TIMER1
 	ori r2, r2, IRQ_PS2C1
-	wrctl ctl3, r2					# Enable interrupts for timer0, timer1, pushbuttons/keyboard
+	wrctl ienable, r2				# Enable bit 1 - Pushbuttons use IRQ 1
 
 	movi r2, 0x1
 	wrctl ctl0, r2					# Enable global Interrupts on Processor 
 	ret
 
 .section .exceptions, "ax"
-	/* Prologue */
-    subi sp, sp, 24
+    /* Prologue */
+    subi sp, sp, 28
     stw r8, 0(sp)
     stw r9, 4(sp)
     stw r10, 8(sp)
-    stw r11, 12(sp)
+   	stw r11, 12(sp)
+	/* Prologue -- nested interrupts */
 	stw ea, 16(sp)
-	rdctl r9, ctl1
-	stw r9, 20(sp)
+	rdctl r8, estatus
+	stw r8, 20(sp)
+	rdctl r9, ienable
+	stw r9, 24(sp)
+	/* Prologue -- end nested interrupts portion */
+	
+	/* TODO: Priority scheme for interrupts. */
+	/* Basically, only interrupts with bit number higher */
+	/* than the current IRQ can interrupt it. */
+	/* TODO: Re-enable interrupts: PIE. */
 
 	# Check if interrupt was caused by a device
     rdctl et, ipending
@@ -111,8 +127,8 @@ keyboard_handler:
 	D -> 23
 	
 	*/
-
-HEX_interrupt:
+	
+HEX_MUX:
 	# If we get here, a HEX keypad button was pushed for sure.
 	# Determine which HEX keypad button was pushed, and branch to its handler.
     movia r9, ADDR_PUSHB 
@@ -122,7 +138,6 @@ HEX_interrupt:
 	# Pre-branching loading appropriate addresses into registers
 	# and loaded appropriate values into the devices at those addresses
 	movia r8, ADDR_JP1
-    movia r9, ADDR_PUSHB			# Do we need this?
 	
 	movia r10, 0x7F557FF			# Set direction for motors to all output 
     stwio r10, JP1_DIRREG(r8)
@@ -137,21 +152,29 @@ HEX_interrupt:
 	beq r10, r11, HEX3_handler
 
 HEX0_handler:
-  
 	call initialize_timer
 	movia r10, 0xFFFFFFFC			# motor0 enabled (bit0=0), direction set to clockwise (bit1=0)
+	movia r8, ADDR_JP1
 	stwio r10, JP1_DATA(r8)
 	call start_timer_once	
-
-    # Timer has started and will interrupt when done, turning off the motor
-	jmpi interrupt_epilogue  
+	
+	movia et, ADDR_PUSHB
+    movia r11, 0xFFFFFFFF
+    stwio r11, PUSHB_ECR(et)		# Clear HEX edge capture registers by write.
+	
+	# Timer has started and will interrupt when done, turning off the motor
+    jmpi interrupt_epilogue  
 
 HEX1_handler:
-  	
 	call initialize_timer
 	movia r10, 0xFFFFFFFE			# motor0 enabled (bit0=0), direction set to clockwise (bit1=1)
+	movia r8, ADDR_JP1
 	stwio r10, JP1_DATA(r8)
 	call start_timer_once	
+	
+	movia et, ADDR_PUSHB
+    movia r11, 0xFFFFFFFF
+    stwio r11, PUSHB_ECR(et)		# Clear HEX edge capture registers by write.
 
 	# Timer has started and will interrupt when done, turning off the motor
     jmpi interrupt_epilogue  
@@ -159,25 +182,43 @@ HEX1_handler:
 HEX2_handler:
 
 	# ...
-
+	
     movia r10, 0xFFFFFFF3			# make it go right (clockwise)
     stwio r10, JP1_DATA(r8)
-    
-	jmpi interrupt_epilogue
 	
+	movia et, ADDR_PUSHB
+    movia r11, 0xFFFFFFFF
+    stwio r11, PUSHB_ECR(et)		# Clear HEX edge capture registers by write.
+	
+	jmpi interrupt_epilogue
+
 HEX3_handler:
 
 	# ...
 
     movia r10, 0xFFFFFFFB			# make it go left (counter-clockwise)
     stwio r10, JP1_DATA(r8)
+	
+	movia et, ADDR_PUSHB
+    movia r11, 0xFFFFFFFF
+    stwio r11, PUSHB_ECR(et)		# Clear HEX edge capture registers by write.
     
+	jmpi interrupt_epilogue
+	
+PS2_handler:
+	# TODO: handle specific keys.
+	
+	movia r8, PS2C1_BASE
+	ldwio r11, PS2C1_DATA(r8)		# Reading clears the keyboard interrupt.
+	
+	movi r9, 0x1
+	wrctl status, r9				# Re-enable interrupts.
+	
 	jmpi interrupt_epilogue
 
 /* The first timer has sent an interrupt, therefore we need to stop
 	PWM and return to normal state looking out for regular interrupts */
 TIMER0_handler:
-
 	movia r8, ADDR_JP1
 
 	movia r10, 0x7F557FF			# Set direction for motors to all output 
@@ -200,17 +241,19 @@ TIMER1_handler:
 	
     
 interrupt_epilogue:
-    movia et, ADDR_PUSHB
-    movia r11, 0xFFFFFFFF
-    stwio r11, 12(et)				# clear HEX edge capture registers by write.
-									# TODO: clear interrupt bit on timer0, timer1
-	ldw r9, 20(sp)
-	wrctl ctl1, r9
+	/* Epilogue for nested interrupts. */
+	ldw r11, 24(sp)
+	wrctl ienable, r11
+	ldw r10, 20(sp)
+	wrctl estatus, r10
 	ldw ea, 16(sp)
+	/* End nested interrupt portion of epilogue. */
     ldw r11, 12(sp)
     ldw r10, 8(sp)
     ldw r9, 4(sp)
     ldw r8, 0(sp)
-    addi sp, sp, 16
+    addi sp, sp, 28
+
+    subi ea, ea, 4					# Interrupt was caused by a device, make sure we re-execute the interrupted instruction.
 	
     eret
