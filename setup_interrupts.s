@@ -19,9 +19,9 @@
 .equ TIMER_STATUS, 0x00
 .equ TIMER_CONTROL, 0x04
 .equ TIMER_PERIODL, 0x08
-.equ TIMER_PERIODH, 0x12
-.equ TIMER_SNAPL, 0x16
-.equ TIMER_SNAPH, 0x20
+.equ TIMER_PERIODH, 0x0c
+.equ TIMER_SNAPL, 0x10
+.equ TIMER_SNAPH, 0x14
 .equ TIMER_INTM, 0x01
 
 /* PS2 Controller addresses and byte offsets */
@@ -95,41 +95,34 @@ setup_interrupts:
     	movia r9, ADDR_PUSHB 
     	ldwio r10, PUSHB_ECR(r9)		# load edge capture register
     	addi r11, r0, 1
-
-	# Pre-branching loading appropriate addresses into registers
-	# and loaded appropriate values into the devices at those addresses
-	movia r8, ADDR_JP1
 	
+	# ... and branch to its handler.
     	# bit 0 set -> HEX0
     	beq r10, r11, HEX0_handler
     	slli r11, r11, 1
     	beq r10, r11, HEX1_handler
     	slli r11, r11, 1
     	beq r10, r11, HEX2_handler
-
+	
+	# Loading appropriate addresses into registers commonly used in subsequent branches.
+	movia r8, ADDR_JP1
 
 HEX0_handler:
-  
 	movia r10, 0xFFFFFFFC			# motor0 enabled (bit0=0), direction set to forward (bit1=0) 
 	stwio r10, JP1_DATA(r8)
-	
     	jmpi interrupt_epilogue  
 
 HEX1_handler:
-  
 	movia r10, 0xFFFFFFFF			# Turn off all motors.
 	stwio r10, JP1_DATA(r8)
-	
     	jmpi interrupt_epilogue  
 
 HEX2_handler:
    	movia r10, 0xFFFFFFF3			# make it go left (or right?!)
     	stwio r10, JP1_DATA(r8)
-    
 	jmpi interrupt_epilogue
     
 interrupt_epilogue:
-    
     	movia et, ADDR_PUSHB
     	movia r11, 0xFFFFFFFF
     	stwio r11, 12(et)			# clear HEX edge capture registers by write.
