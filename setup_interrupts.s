@@ -178,7 +178,7 @@ interrupt_epilogue:
     	ldw r10, 8(sp)
     	ldw r9, 4(sp)
     	ldw r8, 0(sp)
-    	addi sp, sp, 16
+    	addi sp, sp, 28
 
     	subi ea, ea, 4				# Interrupt was caused by a device, make sure we re-execute the interrupted instruction.
 	
