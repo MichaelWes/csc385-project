@@ -80,20 +80,28 @@ setup_interrupts:
 
 .section .exceptions, "ax"
     	/* Prologue */
-    	subi sp, sp, 16
+    	subi sp, sp, 28
     	stw r8, 0(sp)
     	stw r9, 4(sp)
     	stw r10, 8(sp)
-   	 stw r11, 12(sp)
+   	stw r11, 12(sp)
+	/* Prologue -- nested interrupts */
+	stw ea, 16(sp)
+	rdctl r8, estatus
+	stw r8, 20(sp)
+	rdctl r9, ienable
+	stw r9, 24(sp)
+	/* Prologue -- end nested interrupts portion */
+	
+	/* TODO: Priority scheme for interrupts. */
+		/* Basically, only interrupts with bit number higher */
+		/* than the current IRQ can interrupt it. */
+	/* TODO: Re-enable interrupts: PIE. */
 
 	# Check if interrupt was caused by a device
     	rdctl et, ipending
     	beq et, r0, interrupt_epilogue
 	
-	# Interrupt was caused by a device, make sure we
-	# re-execute the interrupted instruction
-    	subi ea, ea, 4
-    
 	# Check if interrupt was caused by the HEX keypad
     	andi r9, et, IRQ_PUSHBUTTONS 		# IRQ 1
     	bne r9, r0, HEX_MUX
@@ -123,33 +131,55 @@ HEX_MUX:
 HEX0_handler:
 	movia r10, 0xFFFFFFFC			# motor0 enabled (bit0=0), direction set to forward (bit1=0) 
 	stwio r10, JP1_DATA(r8)
+	
+	movia et, ADDR_PUSHB
+    	movia r11, 0xFFFFFFFF
+    	stwio r11, 12(et)			# Clear HEX edge capture registers by write.
+	
     	jmpi interrupt_epilogue  
 
 HEX1_handler:
 	movia r10, 0xFFFFFFFF			# Turn off all motors.
 	stwio r10, JP1_DATA(r8)
+	
+	movia et, ADDR_PUSHB
+    	movia r11, 0xFFFFFFFF
+    	stwio r11, 12(et)			# Clear HEX edge capture registers by write.
+	
     	jmpi interrupt_epilogue  
 
 HEX2_handler:
    	movia r10, 0xFFFFFFF3			# Go left (or right?!)
     	stwio r10, JP1_DATA(r8)
+	
+	movia et, ADDR_PUSHB
+    	movia r11, 0xFFFFFFFF
+    	stwio r11, 12(et)			# Clear HEX edge capture registers by write.
+	
 	jmpi interrupt_epilogue
 
 PS2_handler:
-						# TODO: handle specific keys.
+	# TODO: handle specific keys.
+	
 	movia r8, PS2C1_BASE
 	ldwio r11, PS2C1_DATA(r8)		# Reading clears the keyboard interrupt.
 	jmpi interrupt_epilogue
     
 interrupt_epilogue:
-    	movia et, ADDR_PUSHB
-    	movia r11, 0xFFFFFFFF
-    	stwio r11, 12(et)			# Clear HEX edge capture registers by write.
-						# TODO: clear interrupt bit on timer0
+	/* Epilogue for nested interrupts. */
+	ldw r11, 24(sp)
+	wrctl ienable, r11
+	ldw r10, 20(sp)
+	wrctl estatus, r10
+	ldw ea, 16(sp)
+	/* End nested interrupt portion of epilogue. */
+	
     	ldw r11, 12(sp)
     	ldw r10, 8(sp)
     	ldw r9, 4(sp)
     	ldw r8, 0(sp)
     	addi sp, sp, 16
-   
+
+    	subi ea, ea, 4				# Interrupt was caused by a device, make sure we re-execute the interrupted instruction.
+	
     	eret
