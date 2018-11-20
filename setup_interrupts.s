@@ -138,7 +138,7 @@ HEX2_handler:
 PS2_handler:
 						# TODO: handle specific keys.
 	movia r8, PS2C1_BASE
-	ldwio r11, PS2C_DATA(r8)		# Reading clears the keyboard interrupt.
+	ldwio r11, PS2C1_DATA(r8)		# Reading clears the keyboard interrupt.
 	jmpi interrupt_epilogue
     
 interrupt_epilogue:
