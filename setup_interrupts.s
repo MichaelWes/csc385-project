@@ -117,7 +117,7 @@ HEX_MUX:
     	slli r11, r11, 1
     	beq r10, r11, HEX2_handler
 	
-	# Loading appropriate addresses into registers commonly used in subsequent branches.
+	# Load addresses into registers commonly used in subsequent branches.
 	movia r8, ADDR_JP1
 
 HEX0_handler:
@@ -131,18 +131,20 @@ HEX1_handler:
     	jmpi interrupt_epilogue  
 
 HEX2_handler:
-   	movia r10, 0xFFFFFFF3			# make it go left (or right?!)
+   	movia r10, 0xFFFFFFF3			# Go left (or right?!)
     	stwio r10, JP1_DATA(r8)
 	jmpi interrupt_epilogue
 
 PS2_handler:
-	#TODO: handle specific keys.
+						# TODO: handle specific keys.
+	movia r8, PS2C1_BASE
+	ldwio r11, PS2C_DATA(r8)		# Reading clears the keyboard interrupt.
 	jmpi interrupt_epilogue
     
 interrupt_epilogue:
     	movia et, ADDR_PUSHB
     	movia r11, 0xFFFFFFFF
-    	stwio r11, 12(et)			# clear HEX edge capture registers by write.
+    	stwio r11, 12(et)			# Clear HEX edge capture registers by write.
 						# TODO: clear interrupt bit on timer0
     	ldw r11, 12(sp)
     	ldw r10, 8(sp)
