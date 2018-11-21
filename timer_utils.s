@@ -1,16 +1,3 @@
-/* Timer addresses and byte offsets */
-.equ TIMER0_BASE, 0xFF202000
-.equ TIMER1_BASE, 0xFF202020
-.equ TIMER_STATUS, 0x00
-.equ TIMER_CONTROL, 0x04
-.equ TIMER_PERIODL, 0x08
-.equ TIMER_PERIODH, 0x0C
-.equ TIMER_SNAPL, 0x10
-.equ TIMER_SNAPH, 0x14
-.equ TIMER_INTM, 0x09
-.equ TICKS_PER_SEC, 100000000
-.equ TICKS_PER_MSEC, 100000
-
 .text
 
 .global initialize_timer

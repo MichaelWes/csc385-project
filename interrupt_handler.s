@@ -50,6 +50,8 @@ keyboard_handler:
     key_mk:
     call initialize_timer
     call start_timer_once
+    call initialize_timer1
+    call start_timer1_continuous
     movi r9, 0x1d
     movi r8, 0x1b
     beq r10, r8, key_bwd
@@ -84,7 +86,21 @@ TIMER0_handler:
 
     jmpi interrupt_epilogue 
 
-TIMER1_handler:	
+TIMER1_handler:
+    movia r8, L
+    ldw r9, 0(r8)
+    movia r10, sigma
+    ldw r11, 0(r10)
+    
+    # outer pre-condition: TIMER0 is running.
+
+    # while *L >= *counter > *sigma,
+    # do nothing
+    # when *counter == *sigma
+    # toggle off
+    # when *counter == 0, 
+    # toggle on
+
     jmpi interrupt_epilogue
 
 

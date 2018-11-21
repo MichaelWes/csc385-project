@@ -3,6 +3,7 @@
 .global sigma
 .global counter
 
-L:          .word 4000
-sigma:      .word 1000
+# 75% duty cycle
+L:          .word 400
+sigma:      .word 100
 counter:    .word 0
