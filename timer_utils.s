@@ -34,9 +34,9 @@ start_timer_once:
 	
     movia r8, TIMER0_BASE
 	
-	movi r9, 0x8					# Stop the timer
+	movi r9, 0x9					# Stop the timer
 	stwio r9, TIMER_CONTROL(r8)
-	srli r9, r9, 1 					# Start the timer
+	movi r9, 0x5 					# Start the timer
     stwio r9, TIMER_CONTROL(r8)
 
     ret

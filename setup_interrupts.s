@@ -50,12 +50,6 @@ setup_interrupts:
 	movia r10, 0xFFFFFFFF			# Turn off all motors.
 	stwio r10, JP1_DATA(r8)
 
-	/* Request interrupts from HEX */
-	movia r2, ADDR_PUSHB
-	movi r3, PUSHB_INTM				# Enable interrrupt mask = 1111
-	stwio r3, PUSHB_IMR(r2)			# Enable interrupts on pushbuttons 1, 2, 3, and 4
-	stwio r10, PUSHB_ECR(r2)		# Clear edge capture register (write all 1's) for HEX keypad.  
-  
 	/* Request interrupts from timer0, timer1 */
 	movia r2, TIMER0_BASE
 	movia r3, TIMER_INTM			# Enable interrrupt mask = 1001, stop timer  
@@ -95,18 +89,14 @@ setup_interrupts:
 	/* Prologue -- end nested interrupts portion */
 	
 	/* TODO: Priority scheme for interrupts. */
-	/* Basically, only interrupts with bit number higher */
-	/* than the current IRQ can interrupt it. */
+        /* Basically, only interrupts with bit number higher */
+        /* than the current IRQ can interrupt it. */
 	/* TODO: Re-enable interrupts: PIE. */
 
 	# Check if interrupt was caused by a device
     rdctl et, ipending
     beq et, r0, interrupt_epilogue
 	
-	# Interrupt was caused by a device, make sure we
-	# re-execute the interrupted instruction
-    subi ea, ea, 4
-    
 	# Check which device caused the interrupt
 	andi r9, et, IRQ_TIMER0			# IRQ 0, timer 0
 	bne r9, r0, TIMER0_handler
@@ -114,10 +104,13 @@ setup_interrupts:
 	bne r9, r0, TIMER1_handler
 	andi r9, et, IRQ_PS2C1		 	# IRQ 7, keyboard
 	bne r9, r0, keyboard_handler
-	andi r9, et, IRQ_PUSHBUTTONS 	# IRQ 1, pushbuttons
     beq r9, r0, interrupt_epilogue
 
-keyboard_handler:
+	# Pre-branching loading appropriate addresses into registers
+	# and loaded appropriate values into the devices at those addresses
+	
+PS2_handler:
+	# TODO: handle specific keys.
 	/* Keyboard protocol 
 
 	movia r9, PS2C1_BASE
@@ -128,92 +121,15 @@ keyboard_handler:
 	
 	*/
 	
-HEX_MUX:
-	# If we get here, a HEX keypad button was pushed for sure.
-	# Determine which HEX keypad button was pushed, and branch to its handler.
-    movia r9, ADDR_PUSHB 
-    ldwio r10, PUSHB_ECR(r9)		# Load edge capture register
-    addi r11, r0, 1
-
-	# Pre-branching loading appropriate addresses into registers
-	# and loaded appropriate values into the devices at those addresses
-	movia r8, ADDR_JP1
-	
-	movia r10, 0x7F557FF			# Set direction for motors to all output 
-    stwio r10, JP1_DIRREG(r8)
-	
-    # bit n set -> HEXn
-    beq r10, r11, HEX0_handler
-    slli r11, r11, 1
-    beq r10, r11, HEX1_handler
-    slli r11, r11, 1
-    beq r10, r11, HEX2_handler
-	slli r11, r11, 1
-	beq r10, r11, HEX3_handler
-
-HEX0_handler:
-	call initialize_timer
-	movia r10, 0xFFFFFFFC			# motor0 enabled (bit0=0), direction set to clockwise (bit1=0)
-	movia r8, ADDR_JP1
-	stwio r10, JP1_DATA(r8)
-	call start_timer_once	
-	
-	movia et, ADDR_PUSHB
-    movia r11, 0xFFFFFFFF
-    stwio r11, PUSHB_ECR(et)		# Clear HEX edge capture registers by write.
-	
-	# Timer has started and will interrupt when done, turning off the motor
-    jmpi interrupt_epilogue  
-
-HEX1_handler:
-	call initialize_timer
-	movia r10, 0xFFFFFFFE			# motor0 enabled (bit0=0), direction set to clockwise (bit1=1)
-	movia r8, ADDR_JP1
-	stwio r10, JP1_DATA(r8)
-	call start_timer_once	
-	
-	movia et, ADDR_PUSHB
-    movia r11, 0xFFFFFFFF
-    stwio r11, PUSHB_ECR(et)		# Clear HEX edge capture registers by write.
-
-	# Timer has started and will interrupt when done, turning off the motor
-    jmpi interrupt_epilogue  
-
-HEX2_handler:
-
-	# ...
-	
-    movia r10, 0xFFFFFFF3			# make it go right (clockwise)
-    stwio r10, JP1_DATA(r8)
-	
-	movia et, ADDR_PUSHB
-    movia r11, 0xFFFFFFFF
-    stwio r11, PUSHB_ECR(et)		# Clear HEX edge capture registers by write.
-	
-	jmpi interrupt_epilogue
-
-HEX3_handler:
-
-	# ...
-
-    movia r10, 0xFFFFFFFB			# make it go left (counter-clockwise)
-    stwio r10, JP1_DATA(r8)
-	
-	movia et, ADDR_PUSHB
-    movia r11, 0xFFFFFFFF
-    stwio r11, PUSHB_ECR(et)		# Clear HEX edge capture registers by write.
-    
-	jmpi interrupt_epilogue
-	
-PS2_handler:
-	# TODO: handle specific keys.
-	
 	movia r8, PS2C1_BASE
 	ldwio r11, PS2C1_DATA(r8)		# Reading clears the keyboard interrupt.
 	
 	movi r9, 0x1
 	wrctl status, r9				# Re-enable interrupts.
-	
+
+    call initialize_timer
+    call start_timer_once
+
 	jmpi interrupt_epilogue
 
 /* The first timer has sent an interrupt, therefore we need to stop
@@ -234,12 +150,6 @@ TIMER0_handler:
     jmpi interrupt_epilogue 
 	
 
-/* The second timer has sent an interrupt, therefore we need to turn off
-	the motor and go back into the TIMER0 handler */
-TIMER1_handler:
-	...
-	
-    
 interrupt_epilogue:
 	/* Epilogue for nested interrupts. */
 	ldw r11, 24(sp)
