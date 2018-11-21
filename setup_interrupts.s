@@ -72,10 +72,37 @@ setup_interrupts:
 	movi r2, 0x1
 	wrctl ctl0, r2					# Enable global Interrupts on Processor 
 	ret
+	
+motors_off:
+	movia r8, ADDR_JP1
+	movia r10, 0x7F557FF			# Set direction for motors to all output 
+    stwio r10, JP1_DIRREG(r8)
 
+	movia r10, 0xFFFFFFFF			# Turn off all motors.
+	stwio r10, JP1_DATA(r8)
+    ret
+    
+motor0_fwd:
+	movia r8, ADDR_JP1
+	movia r10, 0x7F557FF			
+    stwio r10, JP1_DIRREG(r8)
+
+	movia r10, 0xFFFFFFFC			
+	stwio r10, JP1_DATA(r8)
+    ret
+    
+motor0_bwd:
+	movia r8, ADDR_JP1
+	movia r10, 0x7F557FF			
+    stwio r10, JP1_DIRREG(r8)
+
+	movia r10, 0xFFFFFFFE			
+	stwio r10, JP1_DATA(r8)
+    ret
+    
 .section .exceptions, "ax"
     /* Prologue */
-    subi sp, sp, 28
+    subi sp, sp, 32
     stw r8, 0(sp)
     stw r9, 4(sp)
     stw r10, 8(sp)
@@ -87,6 +114,7 @@ setup_interrupts:
 	rdctl r9, ienable
 	stw r9, 24(sp)
 	/* Prologue -- end nested interrupts portion */
+	stw ra, 28(sp)
 	
 	/* TODO: Priority scheme for interrupts. */
         /* Basically, only interrupts with bit number higher */
@@ -118,37 +146,35 @@ keyboard_handler:
 	D -> 23
 	
 	*/
-	
+	/*
 	movia r8, PS2C1_BASE
-	ldwio r11, PS2C1_DATA(r8)		# Reading clears the keyboard interrupt.
+	ldwio r11, PS2C1_DATA(r8)		# Reading clears the keyboard interrupt. CLOBBER WARNING?
+	*/
 	
 	movi r9, 0x1
 	wrctl status, r9				# Re-enable interrupts.
 
     call initialize_timer
     call start_timer_once
+    
+    call motor0_fwd
 
 	jmpi interrupt_epilogue
 
 /* The first timer has sent an interrupt, therefore we need to stop
 	PWM and return to normal state looking out for regular interrupts */
 TIMER0_handler:
-	movia r8, ADDR_JP1
-
-	movia r10, 0x7F557FF			# Set direction for motors to all output 
-    stwio r10, JP1_DIRREG(r8)
-
-	movia r10, 0xFFFFFFFF			# Turn off all motors.
-	stwio r10, JP1_DATA(r8)
+	call motors_off
 
 	movia r8, TIMER0_BASE
 	
 	stwio r0, TIMER_STATUS(r8)
 	
-    jmpi interrupt_epilogue 
+	jmpi interrupt_epilogue 
 	
 
 interrupt_epilogue:
+	ldw ra, 28(sp)
 	/* Epilogue for nested interrupts. */
 	ldw r11, 24(sp)
 	wrctl ienable, r11
@@ -156,12 +182,12 @@ interrupt_epilogue:
 	wrctl estatus, r10
 	ldw ea, 16(sp)
 	/* End nested interrupt portion of epilogue. */
-    ldw r11, 12(sp)
-    ldw r10, 8(sp)
-    ldw r9, 4(sp)
-    ldw r8, 0(sp)
-    addi sp, sp, 28
+	ldw r11, 12(sp)
+	ldw r10, 8(sp)
+	ldw r9, 4(sp)
+	ldw r8, 0(sp)
+	addi sp, sp, 32
 
-    subi ea, ea, 4					# Interrupt was caused by a device, make sure we re-execute the interrupted instruction.
+	subi ea, ea, 4					# Interrupt was caused by a device, make sure we re-execute the interrupted instruction.
 	
     eret
