@@ -109,17 +109,6 @@ setup_interrupts:
     # and loaded appropriate values into the devices at those addresses
 
 keyboard_handler:
-# TODO: handle specific keys.
-    /* Keyboard protocol 
-
-    movia r9, PS2C1_BASE
-    W -> 1D
-    A -> 1C
-    S -> 1B
-    D -> 23
-
-    */
-
     movia r8, PS2C1_BASE
     ldwio r11, PS2C1_DATA(r8)		# Reading clears the keyboard interrupt.
 
