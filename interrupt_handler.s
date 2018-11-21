@@ -91,7 +91,14 @@ TIMER1_handler:
     ldw r9, 0(r8)
     movia r10, sigma
     ldw r11, 0(r10)
-    
+
+    /*
+    movia r8, TIMER0_BASE
+    ldwio r10, TIMER_STATUS(r8)
+    andi r10, r10, 0x2   # Run bit set?
+    beq r10, r0, TIMER1_DONE
+    */
+
     # outer pre-condition: TIMER0 is running.
 
     # while *L >= *counter > *sigma,
@@ -100,7 +107,7 @@ TIMER1_handler:
     # toggle off
     # when *counter == 0, 
     # toggle on
-
+    TIMER1_DONE:
     jmpi interrupt_epilogue
 
 
