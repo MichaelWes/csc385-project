@@ -1,7 +1,3 @@
-.equ ADDR_JP1, 0xFF200060 
-.equ JP1_DATA, 0x00
-.equ JP1_DIRREG, 0x04
-
 .global motors_off
 .global motor0_fwd
 .global motor0_bwd

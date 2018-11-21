@@ -83,7 +83,10 @@ TIMER0_handler:
     stwio r0, TIMER_STATUS(r8)
 
     jmpi interrupt_epilogue 
-	
+
+TIMER1_handler:	
+    jmpi interrupt_epilogue
+
 
 interrupt_epilogue:
     ldw ra, 28(sp)
