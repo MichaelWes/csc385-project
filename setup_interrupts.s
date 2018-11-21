@@ -100,8 +100,6 @@ setup_interrupts:
 	# Check which device caused the interrupt
 	andi r9, et, IRQ_TIMER0			# IRQ 0, timer 0
 	bne r9, r0, TIMER0_handler
-	andi r9, et, IRQ_TIMER1			# IRQ 2, timer 1
-	bne r9, r0, TIMER1_handler
 	andi r9, et, IRQ_PS2C1		 	# IRQ 7, keyboard
 	bne r9, r0, keyboard_handler
     beq r9, r0, interrupt_epilogue
@@ -109,7 +107,7 @@ setup_interrupts:
 	# Pre-branching loading appropriate addresses into registers
 	# and loaded appropriate values into the devices at those addresses
 	
-PS2_handler:
+keyboard_handler:
 	# TODO: handle specific keys.
 	/* Keyboard protocol 
 
