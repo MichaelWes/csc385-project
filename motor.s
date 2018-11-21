@@ -32,3 +32,21 @@ motor0_bwd:
     movia r10, 0xFFFFFFFE           
     stwio r10, JP1_DATA(r8)
     ret
+
+motor1_fwd:
+    movia r8, ADDR_JP1
+    movia r10, 0x7F557FF            
+    stwio r10, JP1_DIRREG(r8)
+
+    movia r10, 0xFFFFFFF3           
+    stwio r10, JP1_DATA(r8)
+    ret
+            
+motor1_bwd:
+    movia r8, ADDR_JP1
+    movia r10, 0x7F557FF            
+    stwio r10, JP1_DIRREG(r8)
+
+    movia r10, 0xFFFFFFFB           
+    stwio r10, JP1_DATA(r8)
+    ret
