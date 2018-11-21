@@ -120,23 +120,46 @@ keyboard_handler:
 	D -> 23
 	
 	*/
-	/*
-	movia r8, PS2C1_BASE
-	ldwio r11, PS2C1_DATA(r8)		# Reading clears the keyboard interrupt. CLOBBER WARNING?
-	*/
 	
+	movia r8, PS2C1_BASE
+	ldwio r11, PS2C1_DATA(r8)		# Reading clears the keyboard interrupt.
+	
+    /*
 	movi r9, 0x1
-	wrctl status, r9				# Re-enable interrupts.
-
+	wrctl status, r9				# Re-enable interrupts. CLOBBER WARNING.
+	*/
+    
+    movi r9, 0xF0					# Break code prefix byte
+   	andi r10, r11, 0xFF				# Mask the input byte
+    beq r10, r9, key_brk			
+	key_mk:
     call initialize_timer
     call start_timer_once
-    
-    call motor0_fwd
-
+    movi r9, 0x1d
+    movi r8, 0x1b
+    beq r10, r8, key_bwd
+    beq r10, r9, key_fwd
+    movi r9, 0x1c
+    movi r8, 0x23
+    beq r10, r8, key_lft			
+    beq r10, r9, key_rgt			
+    jmpi interrupt_epilogue			# didn't match; do nothing
+	key_fwd:    
+	call motor0_fwd
+    jmpi interrupt_epilogue
+    key_bwd:
+    call motor0_bwd
+    jmpi interrupt_epilogue
+    key_lft:
+    call motor1_fwd
+    jmpi interrupt_epilogue
+    key_rgt:
+    call motor1_bwd
+    jmpi interrupt_epilogue    
+	key_brk:
+	call motors_off 
 	jmpi interrupt_epilogue
-
-/* The first timer has sent an interrupt, therefore we need to stop
-	PWM and return to normal state looking out for regular interrupts */
+	
 TIMER0_handler:
 	call motors_off
 
