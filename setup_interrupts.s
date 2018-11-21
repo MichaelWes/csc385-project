@@ -73,32 +73,6 @@ setup_interrupts:
 	wrctl ctl0, r2					# Enable global Interrupts on Processor 
 	ret
 	
-motors_off:
-	movia r8, ADDR_JP1
-	movia r10, 0x7F557FF			# Set direction for motors to all output 
-    stwio r10, JP1_DIRREG(r8)
-
-	movia r10, 0xFFFFFFFF			# Turn off all motors.
-	stwio r10, JP1_DATA(r8)
-    ret
-    
-motor0_fwd:
-	movia r8, ADDR_JP1
-	movia r10, 0x7F557FF			
-    stwio r10, JP1_DIRREG(r8)
-
-	movia r10, 0xFFFFFFFC			
-	stwio r10, JP1_DATA(r8)
-    ret
-    
-motor0_bwd:
-	movia r8, ADDR_JP1
-	movia r10, 0x7F557FF			
-    stwio r10, JP1_DIRREG(r8)
-
-	movia r10, 0xFFFFFFFE			
-	stwio r10, JP1_DATA(r8)
-    ret
     
 .section .exceptions, "ax"
     /* Prologue */
