@@ -23,8 +23,9 @@
 .equ TIMER_SNAPL, 0x10
 .equ TIMER_SNAPH, 0x14
 .equ TIMER_INTM, 0x09
-.equ TICKS_PER_SEC, 100000000
+.equ TICKS_PER_SEC,  100000000
 .equ TICKS_PER_MSEC, 100000
+.equ TICKS_PER_DSEC, 10000000
 
 /* PS2 Controller addresses and byte offsets */
 .equ PS2C1_BASE, 0xFF200100

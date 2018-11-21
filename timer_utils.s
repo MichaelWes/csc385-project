@@ -9,10 +9,10 @@
 
 initialize_timer:
     movia r8, TIMER0_BASE
-    addi r9, r0, %lo(TICKS_PER_SEC)
+    addi r9, r0, %lo(TICKS_PER_DSEC)
     stwio r9, TIMER_PERIODL(r8)
 
-    addi r9, r0, %hi(TICKS_PER_SEC)
+    addi r9, r0, %hi(TICKS_PER_DSEC)
     stwio r9, TIMER_PERIODH(r8)
 
     ret
@@ -22,7 +22,7 @@ initialize_timer1:
     movia r10, L #L is small, definitely less than 16 bits. 
     ldw r11, 0(r10)
 
-    stwio r9, TIMER_PERIODL(r8)
+    stwio r11, TIMER_PERIODL(r8)
     
     addi r9, r0, %hi(0)
     stwio r9, TIMER_PERIODH(r8)

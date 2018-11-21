@@ -48,6 +48,10 @@ keyboard_handler:
     andi r10, r11, 0xFF				# Mask the input byte
     beq r10, r9, key_brk			
     key_mk:
+    # Mask interrupts from the keyboard (IRQ7) for 100ms
+    # For PWM.
+    stwio r0, PS2C1_CTRLSTS(r8)
+
     call initialize_timer
     call start_timer_once
     call initialize_timer1
@@ -79,9 +83,12 @@ keyboard_handler:
 	
 TIMER0_handler:
     call motors_off
+    # Re-enable keyboard interrupts
+    movia r8, PS2C1_BASE
+    movia r9, 0x1
+    stwio r9, PS2C1_CTRLSTS(r8)
 
     movia r8, TIMER0_BASE
-
     stwio r0, TIMER_STATUS(r8)
 
     jmpi interrupt_epilogue 
