@@ -42,32 +42,32 @@ initialize_timer1:
 
 start_timer_once:
     movia r8, TIMER0_BASE
-	
-	movi r9, 0x9					# Stop the timer
-	stwio r9, TIMER_CONTROL(r8)
-	movi r9, 0x5 					# Start the timer
+
+    movi r9, 0x9					# Stop the timer
+    stwio r9, TIMER_CONTROL(r8)
+    movi r9, 0x5 					# Start the timer
     stwio r9, TIMER_CONTROL(r8)
 
     ret
 
 stop_timer0:
     movia r8, TIMER0_BASE
-	
-	movi r9, 0x9					# Stop the timer
-	stwio r9, TIMER_CONTROL(r8)
+
+    movi r9, 0x9					# Stop the timer
+    stwio r9, TIMER_CONTROL(r8)
 
 stop_timer1:
     movia r8, TIMER1_BASE
-	
-	movi r9, 0x9					# Stop the timer
-	stwio r9, TIMER_CONTROL(r8)
+
+    movi r9, 0x9					# Stop the timer
+    stwio r9, TIMER_CONTROL(r8)
 
 start_timer1_continuous:
     movia r8, TIMER1_BASE
-	
-	movi r9, 0x9					# Stop the timer
-	stwio r9, TIMER_CONTROL(r8)
-	movi r9, 0x7 					# Start the timer, continuous mode
+
+    movi r9, 0x9					# Stop the timer
+    stwio r9, TIMER_CONTROL(r8)
+    movi r9, 0x7 					# Start the timer, continuous mode
     stwio r9, TIMER_CONTROL(r8)
 
     ret
