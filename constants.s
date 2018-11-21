@@ -1,0 +1,42 @@
+/* GPIO JP1 addresses and byte offsets */
+.equ ADDR_JP1, 0xFF200060 
+.equ JP1_DATA, 0x00
+.equ JP1_DIRREG, 0x04
+.equ JP1_IMR, 0x08
+.equ JP1_ECR, 0x0C
+
+/* Pushbutton addresses and byte offsets */
+.equ ADDR_PUSHB, 0xFF200050
+.equ PUSHB_DATA, 0x00
+.equ PUSHB_NA, 0x04
+.equ PUSHB_IMR, 0x08
+.equ PUSHB_ECR, 0x0C
+.equ PUSHB_INTM, 0x0F
+
+/* Timer addresses and byte offsets */
+.equ TIMER0_BASE, 0xFF202000
+.equ TIMER1_BASE, 0xFF202020
+.equ TIMER_STATUS, 0x00
+.equ TIMER_CONTROL, 0x04
+.equ TIMER_PERIODL, 0x08
+.equ TIMER_PERIODH, 0x0C
+.equ TIMER_SNAPL, 0x10
+.equ TIMER_SNAPH, 0x14
+.equ TIMER_INTM, 0x09
+
+/* PS2 Controller addresses and byte offsets */
+.equ PS2C1_BASE, 0xFF200100
+.equ PS2C1_DATA, 0x00
+.equ PS2C1_CTRLSTS, 0x04
+
+/* IRQs for different devices */
+.equ IRQ_PUSHBUTTONS, 0x02
+.equ IRQ_TIMER0, 0x01
+.equ IRQ_TIMER1, 0x04
+.equ IRQ_PS2C1, 0x80
+
+.global ADDR_JP1, JP1_DATA, JP1_DIRREG, JP1_IMR, JP1_ECR
+.global TIMER0_BASE, TIMER1_BASE, TIMER_CONTROL, TIMER_PERIODL, TIMER_PERIODH
+.global TIMER_SNAPL, TIMER_SNAPH, TIMER_INTM
+.global PS2C1_BASE, PS2C1_DATA, PS2C1_CTRLSTS
+.global IRQ_PUSHBUTTONS, IRQ_TIMER0, IRQ_TIMER1, IRQ_PS2C1
