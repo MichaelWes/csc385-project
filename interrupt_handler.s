@@ -107,7 +107,7 @@ parse:
 wait:
     # Is the timer still running? Then wait
     movia r8, TIMER0_BASE
-    lwdio r9, TIMER_STATUS(r8)
+    ldwio r9, TIMER_STATUS(r8)
     andi r9, r9, 0x02
     bne r9, r0, wait
     # If the timer isn't running, then check if more bytes need to be read
@@ -115,7 +115,7 @@ wait:
     and r9, r9, r11
     srli r9, r9, 1
     subi r9, r9, 1
-    bgt keyboard_handler
+    bgt r9, r0, keyboard_handler
     br interrupt_epilogue
 
 	
