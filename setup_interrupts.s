@@ -18,19 +18,17 @@ setup_interrupts:
     movia r3, TIMER_INTM			# Enable interrrupt mask = 1001, stop timer  
     stwio r3, TIMER_CONTROL(r2)		# Enable interrupts on timer0
     stwio r0, TIMER_STATUS(r2)		# Clear interrupt bit for timers.
-
-    /* Request interrupts from keyboard controller */
-    movia r2, PS2C1_BASE
-    movi r3, 0x1
-    stwio r3, PS2C1_CTRLSTS(r2)		# Interrupt enable is bit 0 of control register.
-    ldwio r0, PS2C1_DATA(r2)		# Read data to acknowledge the interrupt. Throw it away.
+    
+    movia r2, TIMER1_BASE
+    movia r3, TIMER_INTM			# Enable interrrupt mask = 1001, stop timer  
+    stwio r3, TIMER_CONTROL(r2)		# Enable interrupts on timer0
+    stwio r0, TIMER_STATUS(r2)		# Clear interrupt bit for timers.
 
     /* Enable specific interrupt lines on processor */
     movia r2, IRQ_PUSHBUTTONS
     ori r2, r2, IRQ_TIMER0
     ori r2, r2, IRQ_TIMER1
-    ori r2, r2, IRQ_PS2C1
-    wrctl ienable, r2				# Enable bit 1 - Pushbuttons use IRQ 1
+    wrctl ienable, r2				
 
     movi r2, 0x1
     wrctl ctl0, r2					# Enable global Interrupts on Processor 
