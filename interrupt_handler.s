@@ -19,7 +19,6 @@
     rdctl et, ipending
     beq et, r0, interrupt_epilogue
 
-	
     subi ea, ea, 4					# Interrupt was caused by a device, make sure we re-execute the interrupted instruction.
 
     # Check which device caused the interrupt
@@ -37,7 +36,9 @@
 keyboard_handler:
     movia r16, PS2C1_BASE
     ldwio r19, PS2C1_DATA(r16)
-
+    andi r17, r19, 0x8000
+    beq r17, r0, interrupt_epilogue
+    
     /*
     movi r17, 0x1
     wrctl status, r17				# Re-enable interrupts. CLOBBER WARNING.
@@ -108,12 +109,11 @@ wait:
     # If the timer isn't running, then check if more bytes need to be read
     movia r17, 0xFFFF0000
     and r17, r17, r19
-    srli r17, r17, 1
+    srli r17, r17, 16
     subi r17, r17, 1
     bgt r17, r0, keyboard_handler
     br interrupt_epilogue
 
-	
 TIMER0_handler:
     call motors_off
     # Re-enable keyboard interrupts
@@ -150,7 +150,6 @@ TIMER1_handler:
     TIMER1_DONE:
     jmpi interrupt_epilogue
 
-
 interrupt_epilogue:
     ldw ra, 0(sp)
     /* Epilogue for nested interrupts. */
@@ -161,8 +160,5 @@ interrupt_epilogue:
     ldw ea, 12(sp)
     /* End nested interrupt portion of epilogue. */
     addi sp, sp, 16
-
-
+    
     eret
-
-
