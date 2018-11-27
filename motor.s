@@ -3,46 +3,91 @@
 .global motor0_bwd
 
 motors_off:
-    movia r8, ADDR_JP1
-    movia r10, 0x7F557FF            # Set direction for motors to all output 
-    stwio r10, JP1_DIRREG(r8)
+	subi sp, sp, 8
+	stw r8, 0(sp)
+	stw r9, 4(sp)
+	
+	movia r8, ADDR_JP1
+    movia r9, 0x7F557FF            # Set direction for motors to all output 
+    stwio r9, JP1_DIRREG(r8)
 
-    movia r10, 0xFFFFFFFF           # Turn off all motors.
-    stwio r10, JP1_DATA(r8)
+    movia r9, 0xFFFFFFFF           # Turn off all motors.
+    stwio r9, JP1_DATA(r8)
+	
+	ldw r9, 4(sp)
+	ldw r8, 0(sp)
+	addi sp, sp, 8
+	
     ret
             
 motor0_fwd:
-    movia r8, ADDR_JP1
-    movia r10, 0x7F557FF            
-    stwio r10, JP1_DIRREG(r8)
+	subi sp, sp, 8
+	stw r8, 0(sp)
+	stw r9, 4(sp)
 
-    movia r10, 0xFFFFFFFC           
-    stwio r10, JP1_DATA(r8)
-    ret
+    movia r8, ADDR_JP1
+    movia r9, 0x7F557FF            
+    stwio r9, JP1_DIRREG(r8)
+
+    movia r9, 0xFFFFFFFC           
+    stwio r9, JP1_DATA(r8)
+
+	ldw r9, 4(sp)
+	ldw r8, 0(sp)
+	addi sp, sp, 8
+	
+	ret
             
 motor0_bwd:
-    movia r8, ADDR_JP1
-    movia r10, 0x7F557FF            
-    stwio r10, JP1_DIRREG(r8)
+	subi sp, sp, 8
+	stw r8, 0(sp)
+	stw r9, 4(sp)
 
-    movia r10, 0xFFFFFFFE           
-    stwio r10, JP1_DATA(r8)
+    movia r8, ADDR_JP1
+    movia r9, 0x7F557FF            
+    stwio r9, JP1_DIRREG(r8)
+
+    movia r9, 0xFFFFFFFE           
+    stwio r9, JP1_DATA(r8)
+	
+	ldw r9, 4(sp)
+	ldw r8, 0(sp)
+	addi sp, sp, 8
+	
     ret
 
 motor1_fwd:
-    movia r8, ADDR_JP1
-    movia r10, 0x7F557FF            
-    stwio r10, JP1_DIRREG(r8)
+	subi sp, sp, 8
+	stw r8, 0(sp)
+	stw r9, 4(sp)
 
-    movia r10, 0xFFFFFFF3           
-    stwio r10, JP1_DATA(r8)
+    movia r8, ADDR_JP1
+    movia r9, 0x7F557FF            
+    stwio r9, JP1_DIRREG(r8)
+
+    movia r9, 0xFFFFFFF3           
+    stwio r9, JP1_DATA(r8)
+	
+	ldw r9, 4(sp)
+	ldw r8, 0(sp)
+	addi sp, sp, 8
+	
     ret
             
 motor1_bwd:
-    movia r8, ADDR_JP1
-    movia r10, 0x7F557FF            
-    stwio r10, JP1_DIRREG(r8)
+	subi sp, sp, 8
+	stw r8, 0(sp)
+	stw r9, 4(sp)
 
-    movia r10, 0xFFFFFFFB           
-    stwio r10, JP1_DATA(r8)
+    movia r8, ADDR_JP1
+    movia r9, 0x7F557FF            
+    stwio r9, JP1_DIRREG(r8)
+
+    movia r9, 0xFFFFFFFB           
+    stwio r9, JP1_DATA(r8)
+	
+	ldw r9, 4(sp)
+	ldw r8, 0(sp)
+	addi sp, sp, 8
+	
     ret

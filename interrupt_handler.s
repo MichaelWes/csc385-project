@@ -1,19 +1,14 @@
 .section .exceptions, "ax"
     /* Prologue */
-    subi sp, sp, 36
-    stw r8, 0(sp)
-    stw r9, 4(sp)
-    stw r10, 8(sp)
-    stw r11, 12(sp)
-    stw r12, 16(sp)
+    subi sp, sp, 16
     /* Prologue -- nested interrupts */
-    stw ea, 20(sp)
-    rdctl r8, estatus
-    stw r8, 24(sp)
-    rdctl r9, ienable
-    stw r9, 28(sp)
+    stw ea, 0(sp)
+    rdctl r16, estatus
+    stw r16, 4(sp)
+    rdctl r17, ienable
+    stw r17, 8(sp)
     /* Prologue -- end nested interrupts portion */
-    stw ra, 32(sp)
+    stw ra, 12(sp)
 
     /* TODO: Priority scheme for interrupts. */
         /* Basically, only interrupts with bit number higher */
@@ -28,30 +23,30 @@
     subi ea, ea, 4					# Interrupt was caused by a device, make sure we re-execute the interrupted instruction.
 
     # Check which device caused the interrupt
-    andi r9, et, IRQ_TIMER0			# IRQ 0, timer 0
-    bne r9, r0, TIMER0_handler
-    andi r9, et, IRQ_TIMER1			# IRQ 2, timer1 
-    bne r9, r0, TIMER1_handler
-    andi r9, et, IRQ_PS2C1		 	# IRQ 7, keyboard
-    bne r9, r0, keyboard_handler
-    beq r9, r0, interrupt_epilogue
+    andi r17, et, IRQ_TIMER0			# IRQ 0, timer 0
+    bne r17, r0, TIMER0_handler
+    andi r17, et, IRQ_TIMER1			# IRQ 2, timer1 
+    bne r17, r0, TIMER1_handler
+    andi r17, et, IRQ_PS2C1		 	# IRQ 7, keyboard
+    bne r17, r0, keyboard_handler
+    beq r17, r0, interrupt_epilogue
 
     # Pre-branching loading appropriate addresses into registers
     # and loaded appropriate values into the devices at those addresses
 
 keyboard_handler:
-    movia r8, PS2C1_BASE
-    ldwio r11, PS2C1_DATA(r8)
+    movia r16, PS2C1_BASE
+    ldwio r19, PS2C1_DATA(r16)
 
     /*
-    movi r9, 0x1
-    wrctl status, r9				# Re-enable interrupts. CLOBBER WARNING.
+    movi r17, 0x1
+    wrctl status, r17				# Re-enable interrupts. CLOBBER WARNING.
     */
 
 parse:
-    movi r9, 0xF0					# Break code prefix byte
-    andi r10, r11, 0xFF				# Mask the input byte
-    beq r10, r9, key_brk			
+    movi r17, 0xF0					# Break code prefix byte
+    andi r18, r19, 0xFF				# Mask the input byte
+    beq r18, r17, key_brk			
     
     key_mk:
     # Mask interrupts from the keyboard (IRQ7) for 100ms
@@ -68,21 +63,21 @@ parse:
     
     # The below has been commented out, refer to explanation above as to why this might
     # not be correct.
-    # stwio r0, PS2C1_CTRLSTS(r8) 
+    # stwio r0, PS2C1_CTRLSTS(r16) 
 
     call initialize_timer
     call start_timer_once
     call initialize_timer1
     call start_timer1_continuous
     
-    movi r9, 0x1D
-    beq r10, r9, key_fwd
-    movi r9, 0x1C
-    beq r10, r9, key_lft
-    movi r9, 0x1B
-    beq r10, r8, key_bwd
-    movi r9, 0x23
-    beq r10, r9, key_rgt
+    movi r17, 0x1D
+    beq r18, r17, key_fwd
+    movi r17, 0x1C
+    beq r18, r17, key_lft
+    movi r17, 0x1B
+    beq r18, r16, key_bwd
+    movi r17, 0x23
+    beq r18, r17, key_rgt
     
     jmpi interrupt_epilogue			# didn't match; do nothing
     
@@ -99,49 +94,49 @@ parse:
         call motor1_bwd
         jmpi wait
     key_brk:
-	ldwio r11, PS2C1_DATA(r8) # Do another read for the make code of 
+	ldwio r19, PS2C1_DATA(r16) # Do another read for the make code of 
 	                          # the key that we want to break
         call motors_off
 	jmpi wait
 
 wait:
     # Is the timer still running? Then wait
-    movia r8, TIMER0_BASE
-    ldwio r9, TIMER_STATUS(r8)
-    andi r9, r9, 0x02
-    bne r9, r0, wait
+    movia r16, TIMER0_BASE
+    ldwio r17, TIMER_STATUS(r16)
+    andi r17, r17, 0x02
+    bne r17, r0, wait
     # If the timer isn't running, then check if more bytes need to be read
-    movia r9, 0xFFFF0000
-    and r9, r9, r11
-    srli r9, r9, 1
-    subi r9, r9, 1
-    bgt r9, r0, keyboard_handler
+    movia r17, 0xFFFF0000
+    and r17, r17, r19
+    srli r17, r17, 1
+    subi r17, r17, 1
+    bgt r17, r0, keyboard_handler
     br interrupt_epilogue
 
 	
 TIMER0_handler:
     call motors_off
     # Re-enable keyboard interrupts
-    movia r8, PS2C1_BASE
-    movia r9, 0x1
-    stwio r9, PS2C1_CTRLSTS(r8)
+    movia r16, PS2C1_BASE
+    movia r17, 0x1
+    stwio r17, PS2C1_CTRLSTS(r16)
 
-    movia r8, TIMER0_BASE
-    stwio r0, TIMER_STATUS(r8)
+    movia r16, TIMER0_BASE
+    stwio r0, TIMER_STATUS(r16)
 
     jmpi interrupt_epilogue 
 
 TIMER1_handler:
-    movia r8, L
-    ldw r9, 0(r8)
-    movia r10, sigma
-    ldw r11, 0(r10)
+    movia r16, L
+    ldw r17, 0(r16)
+    movia r18, sigma
+    ldw r19, 0(r18)
 
     /*
-    movia r8, TIMER0_BASE
-    ldwio r10, TIMER_STATUS(r8)
-    andi r10, r10, 0x2   # Run bit set?
-    beq r10, r0, TIMER1_DONE
+    movia r16, TIMER0_BASE
+    ldwio r18, TIMER_STATUS(r16)
+    andi r18, r18, 0x2   # Run bit set?
+    beq r18, r0, TIMER1_DONE
     */
 
     # outer pre-condition: TIMER0 is running.
@@ -157,20 +152,15 @@ TIMER1_handler:
 
 
 interrupt_epilogue:
-    ldw ra, 32(sp)
+    ldw ra, 0(sp)
     /* Epilogue for nested interrupts. */
-    ldw r11, 28(sp)
-    wrctl ienable, r11
-    ldw r10, 24(sp)
-    wrctl estatus, r10
-    ldw ea, 20(sp)
+    ldw r19, 4(sp)
+    wrctl ienable, r19
+    ldw r18, 8(sp)
+    wrctl estatus, r18
+    ldw ea, 12(sp)
     /* End nested interrupt portion of epilogue. */
-    ldw r12, 16(sp)
-    ldw r11, 12(sp)
-    ldw r10, 8(sp)
-    ldw r9, 4(sp)
-    ldw r8, 0(sp)
-    addi sp, sp, 36
+    addi sp, sp, 16
 
 
     eret
