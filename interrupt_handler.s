@@ -102,7 +102,7 @@ parse:
 	ldwio r11, PS2C1_DATA(r8) # Do another read for the make code of 
 	                          # the key that we want to break
         call motors_off
-	jmpi wait
+        jmpi wait
 
 wait:
     # Is the timer still running? Then wait
@@ -113,7 +113,7 @@ wait:
     # If the timer isn't running, then check if more bytes need to be read
     movia r9, 0xFFFF0000
     and r9, r9, r11
-    srli r9, r9, 1
+    srli r9, r9, 16
     subi r9, r9, 1
     bgt r9, r0, keyboard_handler
     br interrupt_epilogue
