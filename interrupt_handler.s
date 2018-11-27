@@ -97,7 +97,7 @@ parse:
 	ldwio r19, PS2C1_DATA(r16) # Do another read for the make code of 
 	                          # the key that we want to break
         call motors_off
-	jmpi wait
+        jmpi wait
 
 wait:
     # Is the timer still running? Then wait
