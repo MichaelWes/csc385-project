@@ -1,6 +1,8 @@
 .global motors_off
 .global motor0_fwd
 .global motor0_bwd
+.global motor1_fwd
+.global motor1_bwd
 
 motors_off:
     subi sp, sp, 8
