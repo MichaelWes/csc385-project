@@ -5,20 +5,27 @@
 .global motor1_bwd
 
 motors_off:
-    subi sp, sp, 8
+    subi sp, sp, 12
     stw r16, 0(sp)
     stw r17, 4(sp)
+    stw r18, 8(sp)
     
     movia r16, ADDR_JP1
     movia r17, 0x7F557FF            # Set direction for motors to all output 
     stwio r17, JP1_DIRREG(r16)
 
-    movia r17, 0xFFFFFFFF           # Turn off all motors.
+    movia r17, 0xFFDFFFFF
+    movia r18, 0x000003FF           # Turn off all motors.
+    ldwio r16, JP1_DATA(r16)
+    or r16, r16, r18
+    and r17, r16, r17
+    movia r16, ADDR_JP1
     stwio r17, JP1_DATA(r16)
     
+    ldw r18, 8(sp)
     ldw r17, 4(sp)
     ldw r16, 0(sp)
-    addi sp, sp, 8
+    addi sp, sp, 12
 	
     ret
             
@@ -26,35 +33,53 @@ motor0_fwd:
     subi sp, sp, 8
     stw r16, 0(sp)
     stw r17, 4(sp)
+    stw r18, 8(sp)
 
     movia r16, ADDR_JP1
     movia r17, 0x7F557FF            
     stwio r17, JP1_DIRREG(r16)
 
-    movia r17, 0xFFFFFFFC           
+    # turn off motor 1; preserve mode bit.
+    # turn on motor 0, fwd.
+    movia r17, 0xFFFFFFFE
+    movi r18, 0xC
+    ldwio r16, JP1_DATA(r16)
+    or r16, r16, r18
+    and r17, r16, r17
+    movia r16, ADDR_JP1
     stwio r17, JP1_DATA(r16)
-    
+
+    ldw r18, 8(sp)
     ldw r17, 4(sp)
     ldw r16, 0(sp)
-    addi sp, sp, 8
+    addi sp, sp, 12
     
     ret
             
 motor0_bwd:
-    subi sp, sp, 8
+    subi sp, sp, 12
     stw r16, 0(sp)
     stw r17, 4(sp)
+    stw r18, 8(sp)
 
     movia r16, ADDR_JP1
     movia r17, 0x7F557FF            
     stwio r17, JP1_DIRREG(r16)
 
-    movia r17, 0xFFFFFFFE           
+    # turn off motor 1; preserve mode bit.
+    # turn on motor 0, bwd.
+    movia r17, 0xFFFFFFFC
+    movi r18, 0xE
+    ldwio r16, JP1_DATA(r16)
+    or r16, r16, r18
+    and r17, r16, r17
+    movia r16, ADDR_JP1
     stwio r17, JP1_DATA(r16)
     
+    ldw r18, 8(sp)
     ldw r17, 4(sp)
     ldw r16, 0(sp)
-    addi sp, sp, 8
+    addi sp, sp, 12
 	
     ret
 
@@ -83,8 +108,15 @@ motor1_fwd:
     movia r16, ADDR_JP1
     movia r17, 0x7F557FF            
     stwio r17, JP1_DIRREG(r16)
-
-    movia r17, 0xFFFFFFF3           
+    
+    # turn off motor 0; preserve mode bit.
+    # turn on motor 1, fwd.
+    movia r17, 0xFFFFFFF3
+    movi r18, 0x3
+    ldwio r16, JP1_DATA(r16)
+    or r16, r16, r18
+    and r17, r16, r17
+    movia r16, ADDR_JP1    
     stwio r17, JP1_DATA(r16)
     
     motor1_fwd_epilogue:   
@@ -119,8 +151,15 @@ motor1_bwd:
     movia r16, ADDR_JP1
     movia r17, 0x7F557FF            
     stwio r17, JP1_DIRREG(r16)
-
-    movia r17, 0xFFFFFFFB           
+    
+    # turn off motor 0; preserve mode bit.
+    # turn on motor 1, bwd.
+    movia r17, 0xFFFFFFFB 
+    movi r18, 0xB
+    ldwio r16, JP1_DATA(r16)
+    or r16, r16, r18
+    and r17, r16, r17
+    movia r16, ADDR_JP1                
     stwio r17, JP1_DATA(r16)
     
     motor1_bwd_epilogue:

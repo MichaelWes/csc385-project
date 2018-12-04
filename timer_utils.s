@@ -11,10 +11,10 @@ initialize_timer:
     stw r17, 4(sp)
 	
     movia r16, TIMER0_BASE
-    addi r17, r0, %lo(TICKS_PER_T)
+    addi r17, r0, %lo(TICKS_PER_FSEC)
     stwio r17, TIMER_PERIODL(r16)
 
-    addi r17, r0, %hi(TICKS_PER_T)
+    addi r17, r0, %hi(TICKS_PER_FSEC)
     stwio r17, TIMER_PERIODH(r16)
     
     ldw r17, 4(sp)
