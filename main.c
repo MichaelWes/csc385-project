@@ -30,22 +30,20 @@ int main() {
             byte1 = byte2;
             byte2 = byte3;
             byte3 = PS2_data & 0xFF;
-            /*
-            if (byte3 == 0xF0) {
+            
+            if (byte2 == 0xF0) {
                 motors_off();
-                byte1 = byte2;
-                byte2 = byte3;
                 PS2_data = *(PS2_ptr);
                 RVALID = (PS2_data & 0x8000);
-                
                 if(RVALID != 0) {
+                    byte1 = byte2;
+                    byte2 = byte3;
                     byte3 = PS2_data & 0xFF;
                 } else {
-                    byte3 = 0;
+                    continue;
                 }
-                continue;
             }
-            */
+            
         } else {
             continue;
         }
@@ -81,12 +79,13 @@ int main() {
             // key 'D', right.
                 motor1_fwd();
                 break;
-        }	   
+        }
+        /*	   
         switch (byte2) {
             case 0xF0:
-            motors_off();
-            break;
-        }
+                motors_off();
+                break;
+        }*/
     }
 
     return 0;

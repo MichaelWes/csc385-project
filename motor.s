@@ -64,20 +64,21 @@ motor1_fwd:
     stw r17, 4(sp)
     stw r18, 8(sp)
 
-    # Check if value of displacement
-    # is at maximum.
-    movi r16, 1
-    movia r17, turnpos
-    ldw r18, 0(r17)
-    # Branch if at max displacement to the right.
-    # Also turn off motors to prevent typematic spam.
-    bne r18, r16, updt_displacement_motor1_fwd
-    call motors_off
-    jmpi motor1_fwd_epilogue
-    updt_displacement_motor1_fwd:    
-    # Otherwise, update displacement.
-    addi r18, r18, 1
-    stw r18, 0(r17)
+    
+    ## Check if value of displacement
+    ## is at maximum.
+    #movi r16, 1
+    #movia r17, turnpos
+    #ldw r18, 0(r17)
+    ## Branch if at max displacement to the right.
+    ## Also turn off motors to prevent typematic spam.
+    #bne r18, r16, updt_displacement_motor1_fwd
+    #call motors_off
+    #jmpi motor1_fwd_epilogue
+    #updt_displacement_motor1_fwd:    
+    ## Otherwise, update displacement.
+    #addi r18, r18, 1
+    #stw r18, 0(r17)
 
     movia r16, ADDR_JP1
     movia r17, 0x7F557FF            
@@ -90,7 +91,7 @@ motor1_fwd:
     ldw r18, 8(sp)
     ldw r17, 4(sp)
     ldw r16, 0(sp)
-    addi sp, sp, 8
+    addi sp, sp, 12
 	
     ret
             
@@ -100,20 +101,20 @@ motor1_bwd:
     stw r17, 4(sp)
     stw r18, 8(sp)
 
-    # Check if value of displacement
-    # is at maximum.
-    movi r16, -1
-    movia r17, turnpos
-    ldw r18, 0(r17)
-    # Branch if at max displacement to the left.
-    # Also turn off motors to prevent typematic spam.
-    bne r18, r16, updt_displacement_motor1_bwd
-    call motors_off
-    jmpi motor1_bwd_epilogue    
-    updt_displacement_motor1_bwd:
-    # Otherwise, update displacement.
-    addi r18, r18, -1
-    stw r18, 0(r17)
+    ## Check if value of displacement
+    ## is at maximum.
+    #movi r16, -1
+    #movia r17, turnpos
+    #ldw r18, 0(r17)
+    ## Branch if at max displacement to the left.
+    ## Also turn off motors to prevent typematic spam.
+    #bne r18, r16, updt_displacement_motor1_bwd
+    #call motors_off
+    #jmpi motor1_bwd_epilogue    
+    #updt_displacement_motor1_bwd:
+    ## Otherwise, update displacement.
+    #addi r18, r18, -1
+    #stw r18, 0(r17)
 
     movia r16, ADDR_JP1
     movia r17, 0x7F557FF            
@@ -126,6 +127,6 @@ motor1_bwd:
     ldw r18, 8(sp)
     ldw r17, 4(sp)
     ldw r16, 0(sp)
-    addi sp, sp, 8
+    addi sp, sp, 12
 	
     ret
